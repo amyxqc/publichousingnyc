@@ -19,7 +19,24 @@ left off.
 """
 
 # ─── USER SETTINGS ────────────────────────────────────────────────────────────
-NYT_API_KEY = "7DdBw359pt8APA0PFXSdRNdoZz1d3eo2ek6AAOI0ak7eYRFz"
+import os
+
+def _load_dotenv(path=".env"):
+    """Load KEY=VALUE lines from .env into os.environ (no dependency needed)."""
+    if not os.path.exists(path):
+        return
+    with open(path) as fh:
+        for line in fh:
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            k, v = line.split("=", 1)
+            os.environ.setdefault(k.strip(), v.strip().strip('"').strip("'"))
+
+_load_dotenv()
+
+# Read the key from the environment / .env — never hardcode it here.
+NYT_API_KEY = os.environ.get("NYT_API_KEY", "")
 MODE        = "both"
 OUT_DIR     = "./sentiment_output"
 
@@ -301,8 +318,11 @@ def bootstrap_state_from_csv():
 
 
 def collect():
-    if NYT_API_KEY == "YOUR_KEY_HERE":
-        raise ValueError("Set NYT_API_KEY at the top of this script.")
+    if not NYT_API_KEY:
+        raise ValueError(
+            "NYT_API_KEY is not set. Copy .env.example to .env and add your key, "
+            "or export NYT_API_KEY in your shell."
+        )
 
     now = datetime.now()
 
